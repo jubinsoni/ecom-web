@@ -1,25 +1,68 @@
 import './App.css';
-import { Route } from 'react-router-dom';
+import { Switch,Route } from 'react-router-dom';
 
 import HomePage from './pages/homepage/homepage.component';
+import ShopPage from './pages/shop/shop.component';
+import Header from './components/header/header.component';
+import SignInAndSignUp from './pages/sign-in-and-sign-up/sign-in-and-sign-up.component';
+import React from 'react';
+import { auth, createUserProfileDocument } from './firebase/firebase.utils';
 
-const HatsPage = () => {
-  return(
-  <div>
-    <h1>HATS PAGE</h1>
-  </div>
-  );
-};
+class App extends React.Component {
+  constructor(){
+    super();
 
-function App() {
-  return (
-    <div>
-      <switch>
-        <Route exact={true} path='/' component={HomePage} />
-        <Route path='/hats' component={HatsPage} />
-      </switch>
-    </div>
-  );
+    this.state = {
+      currentUser: null
+    }
+  }
+
+  unsubscribeFromAuth = null;
+
+  componentDidMount() {
+    this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
+      if (userAuth) {
+        const userRef = await createUserProfileDocument(userAuth);
+
+        userRef.onSnapshot(snapShot => {
+          this.setState({
+            currentUser: {
+              id: snapShot.id,
+              ...snapShot.data()
+            }
+          } 
+          // to get waht is there is stored in database
+          ,() => {
+            console.log(this.state)
+          }
+          );
+
+          console.log(this.state);
+        });
+      }
+
+      // below is equivalent to this.setState({ currentUser: null });
+      this.setState({ currentUser: userAuth });
+    });
+  }
+
+  componentWillUnmount(){
+    //closes the subscription
+    this.unsubscribeFromAuth();
+  }
+
+  render (){
+    return (
+      <div>
+        <Header currentUser={this.state.currentUser} />
+        <Switch>
+          <Route exact={true} path='/' component={HomePage} />
+          <Route path='/shop' component={ShopPage} />
+          <Route path='/signin' component={SignInAndSignUp} />
+        </Switch>
+      </div>
+    );
+  }
 }
 
 export default App;
