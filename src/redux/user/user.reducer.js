@@ -1,3 +1,5 @@
+import { UserActionTypes } from "./user.types";
+
 //default value of state for the 1st time when application gets rendered
 const INITIAL_STATE = {
     currentUser: null
@@ -8,7 +10,7 @@ const INITIAL_STATE = {
 // internals of react to render it again
 const userReducer = (state = INITIAL_STATE,action) => {
     switch(action.type){
-        case 'SET_CURRENT_USER':
+        case UserActionTypes.SET_CURRENT_USER:
             return{
                 ...state,
                 currentUser: action.payload
